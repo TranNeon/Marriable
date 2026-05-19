@@ -15,6 +15,7 @@
     "check": "biome check"
   },
   "dependencies": {
+    "@better-auth/drizzle-adapter": "^1.6.11",
     "@fontsource-variable/geist": "^5.2.8",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.2.2",
