@@ -16,7 +16,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
-import { Route as ProjectsProjectIdRouteImport } from './routes/projects/$projectId'
+import { Route as ProjectsPrjIdRouteImport } from './routes/projects/$prjId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const TestRoute = TestRouteImport.update({
@@ -54,9 +54,9 @@ const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
   path: '/projects/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
-  id: '/projects/$projectId',
-  path: '/projects/$projectId',
+const ProjectsPrjIdRoute = ProjectsPrjIdRouteImport.update({
+  id: '/projects/$prjId',
+  path: '/projects/$prjId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
@@ -72,7 +72,7 @@ export interface FileRoutesByFullPath {
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/test': typeof TestRoute
-  '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/projects/$prjId': typeof ProjectsPrjIdRoute
   '/projects/': typeof ProjectsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -83,7 +83,7 @@ export interface FileRoutesByTo {
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/test': typeof TestRoute
-  '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/projects/$prjId': typeof ProjectsPrjIdRoute
   '/projects': typeof ProjectsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -95,7 +95,7 @@ export interface FileRoutesById {
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/test': typeof TestRoute
-  '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/projects/$prjId': typeof ProjectsPrjIdRoute
   '/projects/': typeof ProjectsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -108,7 +108,7 @@ export interface FileRouteTypes {
     | '/signin'
     | '/signup'
     | '/test'
-    | '/projects/$projectId'
+    | '/projects/$prjId'
     | '/projects/'
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
@@ -119,7 +119,7 @@ export interface FileRouteTypes {
     | '/signin'
     | '/signup'
     | '/test'
-    | '/projects/$projectId'
+    | '/projects/$prjId'
     | '/projects'
     | '/api/auth/$'
   id:
@@ -130,7 +130,7 @@ export interface FileRouteTypes {
     | '/signin'
     | '/signup'
     | '/test'
-    | '/projects/$projectId'
+    | '/projects/$prjId'
     | '/projects/'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
@@ -142,7 +142,7 @@ export interface RootRouteChildren {
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
   TestRoute: typeof TestRoute
-  ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
+  ProjectsPrjIdRoute: typeof ProjectsPrjIdRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
@@ -198,11 +198,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/projects/$projectId': {
-      id: '/projects/$projectId'
-      path: '/projects/$projectId'
-      fullPath: '/projects/$projectId'
-      preLoaderRoute: typeof ProjectsProjectIdRouteImport
+    '/projects/$prjId': {
+      id: '/projects/$prjId'
+      path: '/projects/$prjId'
+      fullPath: '/projects/$prjId'
+      preLoaderRoute: typeof ProjectsPrjIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -222,7 +222,7 @@ const rootRouteChildren: RootRouteChildren = {
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
   TestRoute: TestRoute,
-  ProjectsProjectIdRoute: ProjectsProjectIdRoute,
+  ProjectsPrjIdRoute: ProjectsPrjIdRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
