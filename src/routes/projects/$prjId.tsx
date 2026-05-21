@@ -77,29 +77,35 @@ function RouteComponent() {
             {/*<Button type="submit"> launch </Button>*/}
           </form>
           <Button
-            onClick={async () =>
+            onClick={async () => {
               createLlmHistoryFn({ data: { projId: parseInt(prjId) } }).then(
-                () =>
+                (createdSessionId) => {
                   queryClient.invalidateQueries({
                     queryKey: ["histories", prjId],
-                  }),
-              )
-            }
+                  });
+                  setSelectedHistory(createdSessionId.toString());
+                },
+              );
+            }}
           >
             New HISTORY IMMEDIATELY
           </Button>
           {/*OK THIS IS WHERE THE DAMN MESSAGES GONNA BE DISPLAYED*/}
           <ol className="flex-1 overflow-auto">
-            {loadedHistory
-              ? loadedHistory[0]?.content?.map((msg) => (
-                  <li>
-                    <strong>{msg.role}: </strong>
-                    <Markdown remarkPlugins={[remarkGfm]}>
-                      {msg.content?.toString() || "<no reply> "}
-                    </Markdown>
-                  </li>
-                ))
-              : "LOADING !!!!"}
+            {loadedHistory ? (
+              loadedHistory[0]?.content?.map((msg) => (
+                <li>
+                  <strong>{msg.role}: </strong>
+                  <Markdown remarkPlugins={[remarkGfm]}>
+                    {msg.content?.toString() || "<no reply> "}
+                  </Markdown>
+                </li>
+              ))
+            ) : (
+              <div className=" flex items-center h-full">
+                <div>No chat Session loaded, select or start new</div>
+              </div>
+            )}
           </ol>
 
           <form

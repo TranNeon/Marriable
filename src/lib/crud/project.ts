@@ -5,7 +5,7 @@ import { and, eq } from "drizzle-orm";
 
 import * as z from "zod";
 import { authMiddleware } from "#/lib/authMiddleware";
-import { createContainer } from "../mcp-client.server";
+import { createContainer, getDocker } from "../mcp-client.server";
 import { getContainerAcessURL } from "../mcp-client.server";
 const createProjectSchema = z.object({
   name: z.string(),
@@ -41,19 +41,30 @@ export const delProjectFn = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .inputValidator(delProjectSchema)
   .handler(async ({ data, context }) => {
+    //remove the container first
+    const containerId = await getAssociatedContainer(data.id);
+    if (!containerId)
+      throw "no container found for this project, this shouldn't happen";
+    const docker = await getDocker();
+    const container = docker.getContainer(containerId);
+    const info = await container.inspect();
+    if (info.State.Running) await container.stop();
+    await container.remove();
+
     await db
       .delete(project)
       .where(and(eq(project.userId, context.user.id), eq(project.id, data.id)));
+
     return "ok";
   });
 
 export const getAssociatedContainer = createServerOnlyFn(
   async (prjId: number) => {
     const result = await db
-      .select({ cid: project.attachedContainer })
+      .select({ containerId: project.attachedContainer })
       .from(project)
       .where(eq(project.id, prjId));
-    return result[0].cid;
+    return result[0].containerId;
   },
 );
 

@@ -13,7 +13,6 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input } from "#/components/ui/input";
 import { useServerFn } from "@tanstack/react-start";
-import { MoreVertical } from "lucide-react";
 
 export const Route = createFileRoute("/projects/")({
   component: RouteComponent,
@@ -24,7 +23,7 @@ function RouteComponent() {
   const queryClient = useQueryClient();
   const getProjects = useServerFn(getProjectsFn);
   const { data: projects } = useQuery({
-    queryKey: ["posts"],
+    queryKey: ["projects"],
     queryFn: getProjects,
   });
   return (
@@ -35,7 +34,9 @@ function RouteComponent() {
             data: {
               name: data.get("name")?.toString() || "Untitled",
             },
-          }).then(() => queryClient.invalidateQueries({ queryKey: ["posts"] }));
+          }).then(() =>
+            queryClient.invalidateQueries({ queryKey: ["projects"] }),
+          );
         }}
       >
         <Input name="name" defaultValue="My great idea"></Input>
@@ -82,11 +83,12 @@ function RouteComponent() {
                 </button>*/}
                 <Button
                   className="p-1  opacity-0 group-hover:opacity-100 "
-                  onClick={() =>
+                  onClick={(e) => {
                     delProjectFn({ data: { id: project.id } }).then(() =>
-                      queryClient.invalidateQueries({ queryKey: ["posts"] }),
-                    )
-                  }
+                      queryClient.invalidateQueries({ queryKey: ["projects"] }),
+                    );
+                    e.stopPropagation();
+                  }}
                 >
                   delete
                 </Button>
@@ -95,28 +97,6 @@ function RouteComponent() {
           </div>
         ))}
       </div>
-
-      <ol>
-        {projects?.map((project) => (
-          <li key={project.id}>
-            <Link
-              to="/projects/$prjId"
-              params={{ prjId: project.id.toString() }}
-            >
-              {project.id} --- {project.name}{" "}
-            </Link>
-            <Button
-              onClick={() =>
-                delProjectFn({ data: { id: project.id } }).then(() =>
-                  queryClient.invalidateQueries({ queryKey: ["posts"] }),
-                )
-              }
-            >
-              delete
-            </Button>
-          </li>
-        ))}
-      </ol>
     </div>
   );
 }

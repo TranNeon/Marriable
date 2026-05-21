@@ -32,12 +32,15 @@ export const createLlmHistoryFn = createServerFn({ method: "GET" })
   .inputValidator(ProjectId)
   .middleware([authMiddleware])
   .handler(async ({ data }) => {
-    await db.insert(llmHistory).values({
-      projectId: data.projId,
-      content: DefaultHistory,
-      name: "hard coded cus i'm lazy",
-    });
-    return "ok";
+    const result = await db
+      .insert(llmHistory)
+      .values({
+        projectId: data.projId,
+        content: DefaultHistory,
+        name: "hard coded for now",
+      })
+      .returning();
+    return result[0].id;
   });
 
 export const getAllLlmHistoryFn = createServerFn({ method: "GET" })
