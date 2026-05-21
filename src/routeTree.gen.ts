@@ -16,6 +16,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
 import { Route as ProjectsPrjIdRouteImport } from './routes/projects/$prjId'
+import { Route as ProjectsSplatRouteImport } from './routes/projects/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const SignupRoute = SignupRouteImport.update({
@@ -53,6 +54,11 @@ const ProjectsPrjIdRoute = ProjectsPrjIdRouteImport.update({
   path: '/projects/$prjId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectsSplatRoute = ProjectsSplatRouteImport.update({
+  id: '/projects/$',
+  path: '/projects/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/projects/$': typeof ProjectsSplatRoute
   '/projects/$prjId': typeof ProjectsPrjIdRoute
   '/projects/': typeof ProjectsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/projects/$': typeof ProjectsSplatRoute
   '/projects/$prjId': typeof ProjectsPrjIdRoute
   '/projects': typeof ProjectsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/projects/$': typeof ProjectsSplatRoute
   '/projects/$prjId': typeof ProjectsPrjIdRoute
   '/projects/': typeof ProjectsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/signin'
     | '/signup'
+    | '/projects/$'
     | '/projects/$prjId'
     | '/projects/'
     | '/api/auth/$'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/signin'
     | '/signup'
+    | '/projects/$'
     | '/projects/$prjId'
     | '/projects'
     | '/api/auth/$'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/signin'
     | '/signup'
+    | '/projects/$'
     | '/projects/$prjId'
     | '/projects/'
     | '/api/auth/$'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
+  ProjectsSplatRoute: typeof ProjectsSplatRoute
   ProjectsPrjIdRoute: typeof ProjectsPrjIdRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -185,6 +198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsPrjIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projects/$': {
+      id: '/projects/$'
+      path: '/projects/$'
+      fullPath: '/projects/$'
+      preLoaderRoute: typeof ProjectsSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
+  ProjectsSplatRoute: ProjectsSplatRoute,
   ProjectsPrjIdRoute: ProjectsPrjIdRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

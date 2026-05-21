@@ -1,9 +1,26 @@
-import { createFileRoute, Link, useRouteContext } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  redirect,
+  useRouteContext,
+} from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client"; // import the auth client
 
 export const Route = createFileRoute("/dashboard")({
   component: RouteComponent,
-  context: async () => await authClient.getSession(),
+  beforeLoad: async ({ location }) => {
+    const { data, error } = await authClient.getSession();
+    if (!data?.session) {
+      throw redirect({
+        to: "/signin",
+        search: {
+          // (Do not use `router.state.resolvedLocation` as it can
+          // potentially lag behind the actual current location)
+          redirect: location.href,
+        },
+      });
+    }
+  },
 });
 
 function RouteComponent() {
