@@ -54,100 +54,96 @@ function RouteComponent() {
       className="h-screen w-full rounded-lg border"
     >
       {/* Left: chat/history panel */}
-      <ResizablePanel defaultSize="60%">
-        <div className="h-screen w-screen">
-          <div className="flex  flex-col">
-            <form>
-              <label> select your sesssions </label>
-              <select
-                value={selectedHistory}
-                onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
-                  setSelectedHistory(event.target.value);
-                  console.log(selectedHistory);
-                  queryClient.invalidateQueries({
-                    queryKey: ["loadedHistory"],
-                  });
-                }}
-              >
-                {histories?.map((history) => (
-                  <option key={history.id} value={history.id}>
-                    {history.name}
-                  </option>
-                ))}
-              </select>
-              {/*<Button type="submit"> launch </Button>*/}
-            </form>
-            <Button
-              onClick={async () =>
-                createLlmHistoryFn({ data: { projId: parseInt(prjId) } }).then(
-                  () =>
-                    queryClient.invalidateQueries({
-                      queryKey: ["histories", prjId],
-                    }),
-                )
-              }
-            >
-              New HISTORY IMMEDIATELY
-            </Button>
-            {/*OK THIS IS WHERE THE DAMN MESSAGES GONNA BE DISPLAYED*/}
-            <ol>
-              {loadedHistory
-                ? loadedHistory[0]?.content?.map((msg) => (
-                    <li>
-                      <strong>{msg.role}: </strong>
-                      {/*<div>THINKING: {JSON.stringify(msg)}</div>*/}
-                      <Markdown remarkPlugins={[remarkGfm]}>
-                        {msg.content?.toString() || "<no reply> "}
-                      </Markdown>
-                    </li>
-                  ))
-                : "LOADING !!!!"}
-            </ol>
-
-            <form
-              className=" flex gap-2 border-t p-4"
-              action={async (formData: FormData) => {
+      <ResizablePanel defaultSize="40%">
+        <div className="flex h-full flex-col overflow-auto">
+          <form>
+            <label> select your sesssions </label>
+            <select
+              value={selectedHistory}
+              onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
+                setSelectedHistory(event.target.value);
                 console.log(selectedHistory);
-                await userSendMsgFn({
-                  data: {
-                    msg: formData.get("msg")?.toString() || "No message",
-                    historyId: parseInt(selectedHistory),
-                  },
-                });
                 queryClient.invalidateQueries({
                   queryKey: ["loadedHistory"],
                 });
               }}
             >
-              <Input name="msg" placeholder="message here" />
-              <Button type="submit"> Send msg</Button>
-            </form>
-          </div>
+              {histories?.map((history) => (
+                <option key={history.id} value={history.id}>
+                  {history.name}
+                </option>
+              ))}
+            </select>
+            {/*<Button type="submit"> launch </Button>*/}
+          </form>
+          <Button
+            onClick={async () =>
+              createLlmHistoryFn({ data: { projId: parseInt(prjId) } }).then(
+                () =>
+                  queryClient.invalidateQueries({
+                    queryKey: ["histories", prjId],
+                  }),
+              )
+            }
+          >
+            New HISTORY IMMEDIATELY
+          </Button>
+          {/*OK THIS IS WHERE THE DAMN MESSAGES GONNA BE DISPLAYED*/}
+          <ol className="flex-1 overflow-auto">
+            {loadedHistory
+              ? loadedHistory[0]?.content?.map((msg) => (
+                  <li>
+                    <strong>{msg.role}: </strong>
+                    <Markdown remarkPlugins={[remarkGfm]}>
+                      {msg.content?.toString() || "<no reply> "}
+                    </Markdown>
+                  </li>
+                ))
+              : "LOADING !!!!"}
+          </ol>
+
+          <form
+            className=" flex gap-2 border-t p-4"
+            action={async (formData: FormData) => {
+              console.log(selectedHistory);
+              await userSendMsgFn({
+                data: {
+                  msg: formData.get("msg")?.toString() || "No message",
+                  historyId: parseInt(selectedHistory),
+                },
+              });
+              queryClient.invalidateQueries({
+                queryKey: ["loadedHistory"],
+              });
+            }}
+          >
+            <Input name="msg" placeholder="message here" />
+            <Button type="submit"> Send msg</Button>
+          </form>
         </div>
       </ResizablePanel>
       <ResizableHandle withHandle />
-      {/* Middle: code-server */}
-      <ResizablePanel defaultSize="20%">
-        <div className="relative h-full w-full space-x-1">
-          <iframe
-            className="h-full w-full"
-            src={`${accessURL}/code-server/?folder=/home/gem`}
-            title="code-server"
-          />
-        </div>
-      </ResizablePanel>
+      <ResizablePanel defaultSize="60%">
+        <ResizablePanelGroup orientation="vertical" className="h-full">
+          {/* top: code-server */}
+          {/* bottom: VNC browser */}
+          <ResizablePanel defaultSize="50%">
+            <iframe
+              className="h-full w-full"
+              src={`${accessURL}//vnc/index.html?autoconnect=true`}
+              title="browser"
+            />
+          </ResizablePanel>
 
-      <ResizableHandle withHandle />
-
-      {/* Right: VNC browser */}
-      <ResizablePanel defaultSize="20%">
-        <div className="relative h-full w-full">
-          <iframe
-            className="h-full w-full"
-            src={`${accessURL}//vnc/index.html?autoconnect=true`}
-            title="browser"
-          />
-        </div>
+          <ResizableHandle withHandle />
+          <ResizablePanel defaultSize="50%">
+            <iframe
+              className="h-full w-full"
+              src={`${accessURL}/code-server/?folder=/home/gem`}
+              title="code-server"
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </ResizablePanel>
     </ResizablePanelGroup>
   );
