@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TestRouteImport } from './routes/test'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -19,11 +18,6 @@ import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
 import { Route as ProjectsPrjIdRouteImport } from './routes/projects/$prjId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
-const TestRoute = TestRouteImport.update({
-  id: '/test',
-  path: '/test',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -71,7 +65,6 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/test': typeof TestRoute
   '/projects/$prjId': typeof ProjectsPrjIdRoute
   '/projects/': typeof ProjectsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -82,7 +75,6 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/test': typeof TestRoute
   '/projects/$prjId': typeof ProjectsPrjIdRoute
   '/projects': typeof ProjectsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -94,7 +86,6 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/test': typeof TestRoute
   '/projects/$prjId': typeof ProjectsPrjIdRoute
   '/projects/': typeof ProjectsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -107,7 +98,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/signin'
     | '/signup'
-    | '/test'
     | '/projects/$prjId'
     | '/projects/'
     | '/api/auth/$'
@@ -118,7 +108,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/signin'
     | '/signup'
-    | '/test'
     | '/projects/$prjId'
     | '/projects'
     | '/api/auth/$'
@@ -129,7 +118,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/signin'
     | '/signup'
-    | '/test'
     | '/projects/$prjId'
     | '/projects/'
     | '/api/auth/$'
@@ -141,7 +129,6 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
-  TestRoute: typeof TestRoute
   ProjectsPrjIdRoute: typeof ProjectsPrjIdRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -149,13 +136,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/test': {
-      id: '/test'
-      path: '/test'
-      fullPath: '/test'
-      preLoaderRoute: typeof TestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -221,7 +201,6 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
-  TestRoute: TestRoute,
   ProjectsPrjIdRoute: ProjectsPrjIdRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

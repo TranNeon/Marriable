@@ -1,23 +1,23 @@
-import { Button } from "#/components/ui/button"
+import { Button } from "#/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "#/components/ui/card"
+} from "#/components/ui/card";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "#/components/ui/field"
-import { Input } from "#/components/ui/input"
+} from "#/components/ui/field";
+import { Input } from "#/components/ui/input";
 
-import { authClient } from "#/lib/auth-client"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
+import { authClient } from "#/lib/auth-client";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
 const schema = z
   .object({
@@ -29,9 +29,9 @@ const schema = z
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
-  })
+  });
 
-type FormData = z.infer<typeof schema>
+type FormData = z.infer<typeof schema>;
 
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const {
@@ -40,7 +40,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-  })
+  });
 
   const onSubmit = async (data: FormData) => {
     await authClient.signUp.email(
@@ -55,14 +55,14 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
           // show loading
         },
         onSuccess: () => {
-          alert("Account created! Check your email.")
+          alert("Account created! Check your email.");
         },
         onError: (ctx) => {
-          alert(ctx.error.message)
+          alert(ctx.error.message);
         },
-      }
-    )
-  }
+      },
+    );
+  };
 
   return (
     <Card {...props}>
@@ -77,25 +77,51 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="name">Full Name</FieldLabel>
-              <Input id="name" type="text" placeholder="John Doe" {...register("name")} />
-              {errors.name && <FieldDescription>{errors.name.message}</FieldDescription>}
+              <Input
+                id="name"
+                type="text"
+                placeholder="John Doe"
+                {...register("name")}
+              />
+              {errors.name && (
+                <FieldDescription>{errors.name.message}</FieldDescription>
+              )}
             </Field>
             <Field>
               <FieldLabel htmlFor="email">Email</FieldLabel>
-              <Input id="email" type="email" placeholder="m@example.com" {...register("email")} />
-              {errors.email && <FieldDescription>{errors.email.message}</FieldDescription>}
+              <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
+                {...register("email")}
+              />
+              {errors.email && (
+                <FieldDescription>{errors.email.message}</FieldDescription>
+              )}
             </Field>
             <Field>
               <FieldLabel htmlFor="password">Password</FieldLabel>
               <Input id="password" type="password" {...register("password")} />
-              <FieldDescription>Must be at least 8 characters long.</FieldDescription>
-              {errors.password && <FieldDescription>{errors.password.message}</FieldDescription>}
+              <FieldDescription>
+                Must be at least 8 characters long.
+              </FieldDescription>
+              {errors.password && (
+                <FieldDescription>{errors.password.message}</FieldDescription>
+              )}
             </Field>
             <Field>
-              <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
-              <Input id="confirm-password" type="password" {...register("confirmPassword")} />
+              <FieldLabel htmlFor="confirm-password">
+                Confirm Password
+              </FieldLabel>
+              <Input
+                id="confirm-password"
+                type="password"
+                {...register("confirmPassword")}
+              />
               {errors.confirmPassword && (
-                <FieldDescription>{errors.confirmPassword.message}</FieldDescription>
+                <FieldDescription>
+                  {errors.confirmPassword.message}
+                </FieldDescription>
               )}
             </Field>
             <FieldGroup>
@@ -103,9 +129,9 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? "Creating..." : "Create Account"}
                 </Button>
-                <Button variant="outline" type="button">
+                {/*<Button variant="outline" type="button">
                   Sign up with Google
-                </Button>
+                </Button>*/}
                 <FieldDescription className="px-6 text-center">
                   Already have an account? <a href="/signin">Sign in</a>
                 </FieldDescription>
@@ -115,5 +141,5 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }
