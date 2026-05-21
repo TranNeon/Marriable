@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { MoreVertical, FileText, FileBadge, FileIcon } from "lucide-react";
 
 export const Route = createFileRoute("/")({ component: App });
 import { Dialog, DialogPanel } from "@headlessui/react";

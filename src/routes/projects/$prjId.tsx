@@ -21,6 +21,8 @@ import {
   ResizablePanelGroup,
 } from "#/components/ui/resizable";
 import { getContainerAcessURLFn } from "#/lib/crud/project";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 function RouteComponent() {
   const { prjId } = Route.useParams();
@@ -93,8 +95,10 @@ function RouteComponent() {
                 ? loadedHistory[0]?.content?.map((msg) => (
                     <li>
                       <strong>{msg.role}: </strong>
-                      <div>THINKING: {JSON.stringify(msg)}</div>
-                      {msg.content?.toString()}
+                      {/*<div>THINKING: {JSON.stringify(msg)}</div>*/}
+                      <Markdown remarkPlugins={[remarkGfm]}>
+                        {msg.content?.toString() || "<no reply> "}
+                      </Markdown>
                     </li>
                   ))
                 : "LOADING !!!!"}
