@@ -62,7 +62,7 @@ function RouteComponent() {
               value={selectedHistory}
               onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
                 setSelectedHistory(event.target.value);
-                console.log(selectedHistory);
+                console.log("selected history" + selectedHistory);
                 queryClient.invalidateQueries({
                   queryKey: ["loadedHistory"],
                 });
