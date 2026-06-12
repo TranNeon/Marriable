@@ -9,34 +9,33 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SignupRouteImport } from './routes/signup'
-import { Route as SigninRouteImport } from './routes/signin'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as AboutRouteImport } from './routes/about'
+import { Route as TestRouteImport } from './routes/test'
+import { Route as SseTestRouteImport } from './routes/sse-test'
+import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as ProjectsRouteRouteImport } from './routes/projects/route'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
+import { Route as LayoutIndexRouteImport } from './routes/_layout.index'
 import { Route as ProjectsPrjIdRouteImport } from './routes/projects/$prjId'
+import { Route as LayoutSignupRouteImport } from './routes/_layout.signup'
+import { Route as LayoutSigninRouteImport } from './routes/_layout.signin'
+import { Route as LayoutDashboardRouteImport } from './routes/_layout.dashboard'
+import { Route as LayoutAboutRouteImport } from './routes/_layout.about'
+import { Route as ApiSseIndexRouteImport } from './routes/api/sse/index'
+import { Route as ApiSseChatRouteImport } from './routes/api/sse/chat'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
-const SignupRoute = SignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
+const TestRoute = TestRouteImport.update({
+  id: '/test',
+  path: '/test',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SigninRoute = SigninRouteImport.update({
-  id: '/signin',
-  path: '/signin',
+const SseTestRoute = SseTestRouteImport.update({
+  id: '/sse-test',
+  path: '/sse-test',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
+const LayoutRoute = LayoutRouteImport.update({
+  id: '/_layout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProjectsRouteRoute = ProjectsRouteRouteImport.update({
@@ -44,20 +43,50 @@ const ProjectsRouteRoute = ProjectsRouteRouteImport.update({
   path: '/projects',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ProjectsRouteRoute,
 } as any)
+const LayoutIndexRoute = LayoutIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const ProjectsPrjIdRoute = ProjectsPrjIdRouteImport.update({
   id: '/$prjId',
   path: '/$prjId',
   getParentRoute: () => ProjectsRouteRoute,
+} as any)
+const LayoutSignupRoute = LayoutSignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutSigninRoute = LayoutSigninRouteImport.update({
+  id: '/signin',
+  path: '/signin',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutDashboardRoute = LayoutDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutAboutRoute = LayoutAboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const ApiSseIndexRoute = ApiSseIndexRouteImport.update({
+  id: '/api/sse/',
+  path: '/api/sse/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSseChatRoute = ApiSseChatRouteImport.update({
+  id: '/api/sse/chat',
+  path: '/api/sse/chat',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
@@ -66,43 +95,58 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
   '/projects': typeof ProjectsRouteRouteWithChildren
-  '/about': typeof AboutRoute
-  '/dashboard': typeof DashboardRoute
-  '/signin': typeof SigninRoute
-  '/signup': typeof SignupRoute
+  '/': typeof LayoutIndexRoute
+  '/sse-test': typeof SseTestRoute
+  '/test': typeof TestRoute
+  '/about': typeof LayoutAboutRoute
+  '/dashboard': typeof LayoutDashboardRoute
+  '/signin': typeof LayoutSigninRoute
+  '/signup': typeof LayoutSignupRoute
   '/projects/$prjId': typeof ProjectsPrjIdRoute
   '/projects/': typeof ProjectsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/sse/chat': typeof ApiSseChatRoute
+  '/api/sse/': typeof ApiSseIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/dashboard': typeof DashboardRoute
-  '/signin': typeof SigninRoute
-  '/signup': typeof SignupRoute
+  '/sse-test': typeof SseTestRoute
+  '/test': typeof TestRoute
+  '/about': typeof LayoutAboutRoute
+  '/dashboard': typeof LayoutDashboardRoute
+  '/signin': typeof LayoutSigninRoute
+  '/signup': typeof LayoutSignupRoute
   '/projects/$prjId': typeof ProjectsPrjIdRoute
+  '/': typeof LayoutIndexRoute
   '/projects': typeof ProjectsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/sse/chat': typeof ApiSseChatRoute
+  '/api/sse': typeof ApiSseIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/projects': typeof ProjectsRouteRouteWithChildren
-  '/about': typeof AboutRoute
-  '/dashboard': typeof DashboardRoute
-  '/signin': typeof SigninRoute
-  '/signup': typeof SignupRoute
+  '/_layout': typeof LayoutRouteWithChildren
+  '/sse-test': typeof SseTestRoute
+  '/test': typeof TestRoute
+  '/_layout/about': typeof LayoutAboutRoute
+  '/_layout/dashboard': typeof LayoutDashboardRoute
+  '/_layout/signin': typeof LayoutSigninRoute
+  '/_layout/signup': typeof LayoutSignupRoute
   '/projects/$prjId': typeof ProjectsPrjIdRoute
+  '/_layout/': typeof LayoutIndexRoute
   '/projects/': typeof ProjectsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/sse/chat': typeof ApiSseChatRoute
+  '/api/sse/': typeof ApiSseIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/projects'
+    | '/'
+    | '/sse-test'
+    | '/test'
     | '/about'
     | '/dashboard'
     | '/signin'
@@ -110,67 +154,71 @@ export interface FileRouteTypes {
     | '/projects/$prjId'
     | '/projects/'
     | '/api/auth/$'
+    | '/api/sse/chat'
+    | '/api/sse/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
+    | '/sse-test'
+    | '/test'
     | '/about'
     | '/dashboard'
     | '/signin'
     | '/signup'
     | '/projects/$prjId'
+    | '/'
     | '/projects'
     | '/api/auth/$'
+    | '/api/sse/chat'
+    | '/api/sse'
   id:
     | '__root__'
-    | '/'
     | '/projects'
-    | '/about'
-    | '/dashboard'
-    | '/signin'
-    | '/signup'
+    | '/_layout'
+    | '/sse-test'
+    | '/test'
+    | '/_layout/about'
+    | '/_layout/dashboard'
+    | '/_layout/signin'
+    | '/_layout/signup'
     | '/projects/$prjId'
+    | '/_layout/'
     | '/projects/'
     | '/api/auth/$'
+    | '/api/sse/chat'
+    | '/api/sse/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   ProjectsRouteRoute: typeof ProjectsRouteRouteWithChildren
-  AboutRoute: typeof AboutRoute
-  DashboardRoute: typeof DashboardRoute
-  SigninRoute: typeof SigninRoute
-  SignupRoute: typeof SignupRoute
+  LayoutRoute: typeof LayoutRouteWithChildren
+  SseTestRoute: typeof SseTestRoute
+  TestRoute: typeof TestRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiSseChatRoute: typeof ApiSseChatRoute
+  ApiSseIndexRoute: typeof ApiSseIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
+    '/test': {
+      id: '/test'
+      path: '/test'
+      fullPath: '/test'
+      preLoaderRoute: typeof TestRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/signin': {
-      id: '/signin'
-      path: '/signin'
-      fullPath: '/signin'
-      preLoaderRoute: typeof SigninRouteImport
+    '/sse-test': {
+      id: '/sse-test'
+      path: '/sse-test'
+      fullPath: '/sse-test'
+      preLoaderRoute: typeof SseTestRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
+    '/_layout': {
+      id: '/_layout'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof LayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/projects': {
@@ -180,13 +228,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/projects/': {
       id: '/projects/'
       path: '/'
@@ -194,12 +235,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsIndexRouteImport
       parentRoute: typeof ProjectsRouteRoute
     }
+    '/_layout/': {
+      id: '/_layout/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof LayoutIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/projects/$prjId': {
       id: '/projects/$prjId'
       path: '/$prjId'
       fullPath: '/projects/$prjId'
       preLoaderRoute: typeof ProjectsPrjIdRouteImport
       parentRoute: typeof ProjectsRouteRoute
+    }
+    '/_layout/signup': {
+      id: '/_layout/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof LayoutSignupRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/signin': {
+      id: '/_layout/signin'
+      path: '/signin'
+      fullPath: '/signin'
+      preLoaderRoute: typeof LayoutSigninRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/dashboard': {
+      id: '/_layout/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof LayoutDashboardRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/about': {
+      id: '/_layout/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof LayoutAboutRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/api/sse/': {
+      id: '/api/sse/'
+      path: '/api/sse'
+      fullPath: '/api/sse/'
+      preLoaderRoute: typeof ApiSseIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sse/chat': {
+      id: '/api/sse/chat'
+      path: '/api/sse/chat'
+      fullPath: '/api/sse/chat'
+      preLoaderRoute: typeof ApiSseChatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -225,14 +315,33 @@ const ProjectsRouteRouteWithChildren = ProjectsRouteRoute._addFileChildren(
   ProjectsRouteRouteChildren,
 )
 
+interface LayoutRouteChildren {
+  LayoutAboutRoute: typeof LayoutAboutRoute
+  LayoutDashboardRoute: typeof LayoutDashboardRoute
+  LayoutSigninRoute: typeof LayoutSigninRoute
+  LayoutSignupRoute: typeof LayoutSignupRoute
+  LayoutIndexRoute: typeof LayoutIndexRoute
+}
+
+const LayoutRouteChildren: LayoutRouteChildren = {
+  LayoutAboutRoute: LayoutAboutRoute,
+  LayoutDashboardRoute: LayoutDashboardRoute,
+  LayoutSigninRoute: LayoutSigninRoute,
+  LayoutSignupRoute: LayoutSignupRoute,
+  LayoutIndexRoute: LayoutIndexRoute,
+}
+
+const LayoutRouteWithChildren =
+  LayoutRoute._addFileChildren(LayoutRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   ProjectsRouteRoute: ProjectsRouteRouteWithChildren,
-  AboutRoute: AboutRoute,
-  DashboardRoute: DashboardRoute,
-  SigninRoute: SigninRoute,
-  SignupRoute: SignupRoute,
+  LayoutRoute: LayoutRouteWithChildren,
+  SseTestRoute: SseTestRoute,
+  TestRoute: TestRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiSseChatRoute: ApiSseChatRoute,
+  ApiSseIndexRoute: ApiSseIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

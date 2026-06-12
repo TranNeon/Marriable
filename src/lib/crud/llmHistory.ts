@@ -7,6 +7,7 @@ import type { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import { eq } from "drizzle-orm";
 import { getLlm } from "../llm";
 import { callTool, getMcp_n_Tool } from "../mcp-client.server";
+
 const ProjectId = z.object({
   projId: z.int().nonoptional(),
 });
@@ -69,79 +70,79 @@ export const getSingleLlmHistoryFn = createServerFn({ method: "GET" })
       .limit(1);
   });
 
-const historyUndMsg = z.object({
+export const historyUndMsg = z.object({
   historyId: z.int().nonoptional(),
   msg: z.string(),
 });
 
-export const userSendMsgFn = createServerFn({
-  method: "POST",
-})
-  .inputValidator(historyUndMsg)
-  .handler(async ({ data: { historyId, msg } }) => {
-    console.log(`handing request: historyId ${historyId}`);
+// export const userSendMsgFn = createServerFn({
+//   method: "POST",
+// })
+//   .inputValidator(historyUndMsg)
+//   .handler(async ({ data: { historyId, msg } }) => {
+//     console.log(`handing request: historyId ${historyId}`);
 
-    let oldHist = await db
-      .select()
-      .from(llmHistory)
-      .where(eq(llmHistory.id, historyId))
-      .limit(1);
+//     let oldHist = await db
+//       .select()
+//       .from(llmHistory)
+//       .where(eq(llmHistory.id, historyId))
+//       .limit(1);
 
-    if (!oldHist[0] || !oldHist[0].content) {
-      throw new Error("History not found or has no content");
-    }
+//     if (!oldHist[0] || !oldHist[0].content) {
+//       throw new Error("History not found or has no content");
+//     }
 
-    oldHist[0].content.push({ role: "user", content: msg });
+//     oldHist[0].content.push({ role: "user", content: msg });
 
-    const llm = getLlm();
+//     const llm = getLlm();
 
-    const prjIdQueryResult = await db
-      .select()
-      .from(llmHistory)
-      .where(eq(llmHistory.id, historyId));
-    const prjId = prjIdQueryResult[0].projectId;
-    if (!prjId) throw "no associated project";
-    const { client: mcp, openai_tools: tools } = await getMcp_n_Tool(prjId);
+//     const prjIdQueryResult = await db
+//       .select()
+//       .from(llmHistory)
+//       .where(eq(llmHistory.id, historyId));
+//     const prjId = prjIdQueryResult[0].projectId;
+//     if (!prjId) throw "no associated project";
+//     const { client: mcp, openai_tools: tools } = await getMcp_n_Tool(prjId);
 
-    console.log(`USER: ${msg}`);
-    for (let i = 0; i < 50; ++i) {
-      const res = await llm.chat.completions.create({
-        model: process.env.LLM_MODEL || "gpt-4-32k",
-        messages: oldHist[0].content,
-        tools,
-      });
-      const llmReply = res.choices[0].message;
-      oldHist[0].content.push(llmReply);
+//     console.log(`USER: ${msg}`);
+//     for (let i = 0; i < 50; ++i) {
+//       const res = await llm.chat.completions.create({
+//         model: process.env.LLM_MODEL || "gpt-4-32k",
+//         messages: oldHist[0].content,
+//         tools,
+//       });
+//       const llmReply = res.choices[0].message;
+//       oldHist[0].content.push(llmReply);
 
-      //if ai answer directly this times stop looping and save
-      if (!llmReply.tool_calls?.length) {
-        break;
-      }
+//       //if ai answer directly this times stop looping and save
+//       if (!llmReply.tool_calls?.length) {
+//         break;
+//       }
 
-      for (const tc of llmReply.tool_calls) {
-        if (tc.type !== "function") continue;
-        const args = JSON.parse(tc.function.arguments || "{}") as Record<
-          string,
-          unknown
-        >;
+//       for (const tc of llmReply.tool_calls) {
+//         if (tc.type !== "function") continue;
+//         const args = JSON.parse(tc.function.arguments || "{}") as Record<
+//           string,
+//           unknown
+//         >;
 
-        // const result = " Tool calling is infact not supported ";
-        const result = await callTool(mcp, tc.function.name, args).catch(
-          (e) => `error: ${e}`,
-        );
+//         // const result = " Tool calling is infact not supported ";
+//         const result = await callTool(mcp, tc.function.name, args).catch(
+//           (e) => `error: ${e}`,
+//         );
 
-        oldHist[0].content.push({
-          role: "tool",
-          tool_call_id: tc.id,
-          content: result,
-        });
-      }
-    }
+//         oldHist[0].content.push({
+//           role: "tool",
+//           tool_call_id: tc.id,
+//           content: result,
+//         });
+//       }
+//     }
 
-    await db
-      .update(llmHistory)
-      .set({ content: oldHist[0].content })
-      .where(eq(llmHistory.id, historyId));
+//     await db
+//       .update(llmHistory)
+//       .set({ content: oldHist[0].content })
+//       .where(eq(llmHistory.id, historyId));
 
-    return "ok";
-  });
+//     return "ok";
+//   });

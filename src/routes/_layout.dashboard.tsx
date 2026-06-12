@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client"; // import the auth client
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_layout/dashboard")({
   component: RouteComponent,
   beforeLoad: async ({ location }) => {
     const { data, error } = await authClient.getSession();
