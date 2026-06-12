@@ -8,6 +8,8 @@ import { eq } from "drizzle-orm";
 import { getLlm } from "#/lib/llm.ts";
 import { callTool, getMcp_n_Tool } from "#/lib/mcp-client.server.ts";
 import { TextEncoder } from "util";
+import { buffer } from "stream/consumers";
+import type { ChatCompletionToolMessageParam } from "openai/resources/index.mjs";
 
 async function getOldHist(historyId: number) {
   return db
@@ -25,6 +27,16 @@ async function ownedPrjId(historyId: number) {
   const prjId = prjIdQueryResult[0].projectId;
   if (!prjId) throw "no associated project";
   return prjId;
+}
+// Define interface for our tool call accumulator
+interface ToolCallBufferItem {
+  id: string;
+  name: string;
+  arguments: string;
+}
+
+interface ToolCallsBuffer {
+  [index: number]: ToolCallBufferItem;
 }
 
 export const Route = createFileRoute("/api/sse/chat")({
@@ -60,9 +72,11 @@ export const Route = createFileRoute("/api/sse/chat")({
               const AGENT_LOOP = 50;
 
               for (let i = 0; i < AGENT_LOOP; ++i) {
+                const toolCallsBuffer: ToolCallsBuffer = {};
+                let toolCount = 0;
                 if (!oldHist[0].content) throw "no message sent???";
                 const stream = await llm.chat.completions.create({
-                  model: process.env.LLM_MODEL || "gpt-4-32k",
+                  model: process.env.LLM_MODEL || "deepseek-chat",
                   messages: oldHist[0].content,
                   tools,
                   stream: true,
@@ -76,47 +90,92 @@ export const Route = createFileRoute("/api/sse/chat")({
                         encoder.encode(`data:${JSON.stringify(delta)}\n\n`),
                       );
                     }
+
+                    if (delta?.tool_calls) {
+                      for (const toolCall of delta.tool_calls) {
+                        const index = toolCall.index;
+
+                        // Initialize the buffer slot for this specific tool call index
+                        if (!(index in toolCallsBuffer)) {
+                          toolCount += 1;
+                          toolCallsBuffer[index] = {
+                            id: toolCall.id || "",
+                            name: toolCall.function?.name || "",
+                            arguments: "",
+                          };
+                          console.log(`Received tool call `);
+                          console.log(toolCallsBuffer[index]);
+                        }
+
+                        // Accumulate the streaming arguments JSON string
+                        if (toolCall.function?.arguments) {
+                          const argFragment = toolCall.function.arguments;
+                          toolCallsBuffer[index].arguments += argFragment;
+                        }
+                      }
+                    }
                   }
                 } catch (error) {
                   controller.error(error);
+                  return; // stop processing on stream error
                 }
-
-                // const llmReply = res.choices[0].message;
-                // oldHist[0].content.push(llmReply);
-
-                //if ai answer directly this times stop looping and save
-                if (true) {
-                  console.log(
-                    "Stream ends, tool called should have been handled here",
-                  );
+                console.log("toolCount:", toolCount);
+                if (!toolCount) {
                   break;
                 }
 
-                //   for (const tc of llmReply.tool_calls) {
-                //     if (tc.type !== "function") continue;
-                //     const args = JSON.parse(tc.function.arguments || "{}") as Record<
-                //       string,
-                //       unknown
-                //     >;
+                // Push a SINGLE assistant message with ALL tool calls
+                const assistantMsg: any = {
+                  role: "assistant",
+                  content: null,
+                  tool_calls: Object.values(toolCallsBuffer).map((tc) => ({
+                    id: tc.id,
+                    type: "function",
+                    function: {
+                      name: tc.name,
+                      arguments: tc.arguments,
+                    },
+                  })),
+                };
+                oldHist[0].content.push(assistantMsg);
 
-                //     // const result = " Tool calling is infact not supported ";
-                //     const result = await callTool(mcp, tc.function.name, args).catch(
-                //       (e) => `error: ${e}`,
-                //     );
+                // Then push tool results
+                for (const [index, call_data] of Object.entries(
+                  toolCallsBuffer,
+                )) {
+                  const args = JSON.parse(
+                    call_data?.arguments || "{}",
+                  ) as Record<string, unknown>;
+                  const result = await callTool(
+                    mcp,
+                    call_data.name,
+                    args,
+                  ).catch((e) => `error: ${e}`);
 
-                //     oldHist[0].content.push({
-                //       role: "tool",
-                //       tool_call_id: tc.id,
-                //       content: result,
-                //     });
-                //   }
+                  const tool_obj = {
+                    role: "tool" as const,
+                    tool_call_id: call_data.id,
+                    content: result,
+                  };
+                  oldHist[0].content.push(tool_obj);
+                  controller.enqueue(
+                    encoder.encode(
+                      `event:tool\ndata:${JSON.stringify(tool_obj)}\n\n`,
+                    ),
+                  );
+                  await db
+                    .update(llmHistory)
+                    .set({ content: oldHist[0].content })
+                    .where(eq(llmHistory.id, historyId));
+                }
               }
 
               await db
                 .update(llmHistory)
                 .set({ content: oldHist[0].content })
                 .where(eq(llmHistory.id, historyId));
-              controller.close(); // close down connection.
+              controller.enqueue(encoder.encode("event: done\ndata: {}\n\n"));
+              controller.close(); // close down connection when data is no longer in transit, client
             },
           });
 

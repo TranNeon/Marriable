@@ -69,9 +69,13 @@ function RouteComponent() {
 
     eventSource.onmessage = (e) =>
       setStreamingResponse((pre) => {
-        console.log(e.data);
         return pre + JSON.parse(e.data)?.content;
       });
+
+    eventSource.addEventListener("done", () => {
+      eventSource.close();
+      queryClient.invalidateQueries({ queryKey: ["loadedHistory"] });
+    });
   };
 
   return (
