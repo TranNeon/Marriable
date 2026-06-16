@@ -27,6 +27,7 @@ TOOL ROUTING — follow these rules exactly:
 Workspace: /home/gem (Ubuntu Linux). Node.js and npm are already installed.`,
   },
 ];
+export const UNTITLED = "New Chat";
 
 export const createLlmHistoryFn = createServerFn({ method: "GET" })
   .inputValidator(ProjectId)
@@ -37,7 +38,7 @@ export const createLlmHistoryFn = createServerFn({ method: "GET" })
       .values({
         projectId: data.projId,
         content: DefaultHistory,
-        name: "hard coded for now",
+        name: UNTITLED,
       })
       .returning();
     return result[0].id;

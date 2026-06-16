@@ -10,6 +10,7 @@ import { callTool, getMcp_n_Tool } from "#/lib/mcp-client.server.ts";
 import { TextEncoder } from "util";
 import { buffer } from "stream/consumers";
 import type { ChatCompletionToolMessageParam } from "openai/resources/index.mjs";
+import { UNTITLED } from "#/lib/crud/llmHistory";
 
 async function getOldHist(historyId: number) {
   return db
@@ -61,6 +62,13 @@ export const Route = createFileRoute("/api/sse/chat")({
 
           oldHist[0].content.push({ role: "user", content: msg });
 
+          // if this chat is unamed , give it a name
+          if (oldHist[0].name === UNTITLED)
+            await db
+              .update(llmHistory)
+              .set({ name: msg })
+              .where(eq(llmHistory.id, historyId));
+
           const llm = getLlm();
           const prjId = await ownedPrjId(historyId);
           const { client: mcp, openai_tools: tools } =
@@ -81,7 +89,7 @@ export const Route = createFileRoute("/api/sse/chat")({
                   tools,
                   stream: true,
                 });
-
+                let serverBuffer = "";
                 try {
                   for await (const chunk of stream) {
                     const delta = chunk.choices[0]?.delta;
@@ -89,6 +97,7 @@ export const Route = createFileRoute("/api/sse/chat")({
                       controller.enqueue(
                         encoder.encode(`data:${JSON.stringify(delta)}\n\n`),
                       );
+                      serverBuffer = serverBuffer + delta.content;
                     }
 
                     if (delta?.tool_calls) {
@@ -127,7 +136,7 @@ export const Route = createFileRoute("/api/sse/chat")({
                 // Push a SINGLE assistant message with ALL tool calls
                 const assistantMsg: any = {
                   role: "assistant",
-                  content: null,
+                  content: serverBuffer,
                   tool_calls: Object.values(toolCallsBuffer).map((tc) => ({
                     id: tc.id,
                     type: "function",

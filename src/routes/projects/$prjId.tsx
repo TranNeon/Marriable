@@ -40,7 +40,6 @@ function RouteComponent() {
   useEffect(() => {
     setStreamingResponse("");
   }, [histories]);
-  //todo: damn, how else would i handle this
   const [selectedHistory, setSelectedHistory] = useState<string>("");
   const getSingleLlmHistory = useServerFn(getSingleLlmHistoryFn);
   const [streamingResponse, setStreamingResponse] = useState<string>("");
@@ -70,12 +69,6 @@ function RouteComponent() {
     console.log("connecting to " + url);
     const eventSource = new EventSource(url);
 
-    setStreamingResponse("");
-    queryClient.invalidateQueries({
-      queryKey: ["loadedHistory"],
-    });
-    //Todo: handle this more gracefully such that the streaming response won't flash and reappear
-
     eventSource.onmessage = (e) =>
       setStreamingResponse((pre) => {
         return pre + JSON.parse(e.data)?.content;
@@ -83,6 +76,7 @@ function RouteComponent() {
 
     eventSource.addEventListener("done", () => {
       eventSource.close();
+      //that will call the use effect to also clear the buffer, so we'll start clean next time
       queryClient.invalidateQueries({ queryKey: ["loadedHistory"] });
     });
   };
@@ -126,32 +120,33 @@ function RouteComponent() {
           </Button>
           {/*OK THIS IS WHERE THE DAMN MESSAGES GONNA BE DISPLAYED*/}
           <ol className="flex-1 overflow-auto">
-            {loadedHistory ? (
-              loadedHistory[0]?.content?.map((msg) =>
-                msg.role === "user" ? (
-                  <li className="bg-amber-200 p-5 m-5 ml-25">
-                    <strong>{msg.role}: </strong>
-                    <Markdown remarkPlugins={[remarkGfm]}>
-                      {msg.content?.toString() || "<no reply> "}
-                    </Markdown>
-                  </li>
-                ) : (
-                  <li className="bg-amber-200 p-5 m-5 mr-25">
-                    <strong>{msg.role}: </strong>
-                    <Markdown remarkPlugins={[remarkGfm]}>
-                      {msg.content?.toString() || "<no reply> "}
-                    </Markdown>
-                  </li>
-                ),
-              )
-            ) : (
-              <div className=" flex items-center h-full">
-                <div>No chat Session loaded, select or start new</div>
-              </div>
+            {isLoading && <li className="p-5 m-5">Loading chat...</li>}
+
+            {!isLoading && !loadedHistory?.[0]?.content?.length && (
+              <li className="flex items-center justify-center h-full">
+                <div>No chat Session, select or start new</div>
+              </li>
             )}
-            {streamingResponse !== "" && (
-              <li className="bg-amber-200 p-5 m-5 mr-25">
-                <strong>{"streaming ai "}: </strong>
+
+            {loadedHistory?.[0]?.content?.map((msg, i) => (
+              <li
+                key={i}
+                className={`p-5 m-5 ${
+                  msg.role === "user"
+                    ? "bg-amber-200 ml-25"
+                    : "bg-amber-100 mr-25"
+                }`}
+              >
+                <strong>{msg.role}: </strong>
+                <Markdown remarkPlugins={[remarkGfm]}>
+                  {msg.content?.toString() || "<no reply>"}
+                </Markdown>
+              </li>
+            ))}
+
+            {streamingResponse && (
+              <li className="bg-amber-100 mr-25">
+                <strong>streaming ai: </strong>
                 <Markdown remarkPlugins={[remarkGfm]}>
                   {streamingResponse}
                 </Markdown>
