@@ -24,8 +24,7 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import HoverSelect from "#/components/hover-select";
 
-
-function Chat(props: { prjId: string, queryClient: QueryClient }) {
+function Chat(props: { prjId: string; queryClient: QueryClient }) {
   const getAllLlmHistory = useServerFn(getAllLlmHistoryFn);
   const { data: histories } = useQuery({
     queryKey: ["histories", props.prjId],
@@ -36,19 +35,10 @@ function Chat(props: { prjId: string, queryClient: QueryClient }) {
     },
   });
 
-  //historiies is source of truth , the for convenient streamed Response can die
-  useEffect(() => {
-    setStreamingResponse("");
-  }, [histories]);
-
-
   const [selectedHistory, setSelectedHistory] = useState<string>("");
   const getSingleLlmHistory = useServerFn(getSingleLlmHistoryFn);
   const [streamingResponse, setStreamingResponse] = useState<string>("");
-  const {
-    data: loadedHistory,
-    isLoading,
-  } = useQuery({
+  const { data: loadedHistory, isLoading } = useQuery({
     queryKey: ["loadedHistory"],
     queryFn: () =>
       getSingleLlmHistory({ data: { historyId: parseInt(selectedHistory) } }),
@@ -61,7 +51,6 @@ function Chat(props: { prjId: string, queryClient: QueryClient }) {
     });
 
     const url = `/api/sse/chat?${params.toString()}`;
-    console.log("connecting to " + url);
     const eventSource = new EventSource(url);
 
     eventSource.onmessage = (e) =>
@@ -71,61 +60,78 @@ function Chat(props: { prjId: string, queryClient: QueryClient }) {
 
     eventSource.addEventListener("done", () => {
       eventSource.close();
-      //that will call the use effect to also clear the buffer, so we'll start clean next time
       props.queryClient.invalidateQueries({ queryKey: ["loadedHistory"] });
+      setStreamingResponse("");
     });
+
+    //invalidate anyways such that posted user message is stored
+    props.queryClient.invalidateQueries({ queryKey: ["loadedHistory"] });
   };
 
-  return (<div className="flex h-full flex-col overflow-auto">
-    {histories && <HoverSelect items={histories.map(history => ({
-      name: history.name,
-      value: history.id
-    }))} action={(value: any) => {
-      setSelectedHistory(value);
-      props.queryClient.invalidateQueries({
-        queryKey: ["loadedHistory"]
-      });
-    }} />}
-    {isLoading && <span>Loading...</span>}
-    <Button onClick={NewChatHandler()}>
-      New HISTORY IMMEDIATELY
-    </Button>
-    <ol className="flex-1 overflow-auto">
-      {isLoading && <li className="p-5 m-5">Loading chat...</li>}
+  return (
+    <div className="flex h-full flex-col overflow-auto">
+      {histories && (
+        <HoverSelect
+          items={histories.map((history) => ({
+            name: history.name,
+            value: history.id,
+          }))}
+          action={(value: any) => {
+            setSelectedHistory(value);
+            props.queryClient.invalidateQueries({
+              queryKey: ["loadedHistory"],
+            });
+          }}
+        />
+      )}
+      {isLoading && <span>Loading...</span>}
+      <Button onClick={NewChatHandler()}>New HISTORY IMMEDIATELY</Button>
+      <ol className="flex-1 overflow-auto">
+        {isLoading && <li className="p-5 m-5">Loading chat...</li>}
 
-      {!isLoading && !loadedHistory?.[0]?.content?.length && <li className="flex items-center justify-center h-full">
-        <div>No chat Session, select or start new</div>
-      </li>}
+        {!isLoading && !loadedHistory?.[0]?.content?.length && (
+          <li className="flex items-center justify-center h-full">
+            <div>No chat Session, select or start new</div>
+          </li>
+        )}
 
-      {loadedHistory?.[0]?.content?.map((msg, i) => <li key={i} className={`p-5 m-5 ${msg.role === "user" ? "bg-amber-200 ml-25" : "bg-amber-100 mr-25"}`}>
-        <strong>{msg.role}: </strong>
-        <Markdown remarkPlugins={[remarkGfm]}>
-          {msg.content?.toString() || "<no reply>"}
-        </Markdown>
-      </li>)}
+        {loadedHistory?.[0]?.content?.map((msg, i) => (
+          <li
+            key={i}
+            className={`p-5 m-5 ${msg.role === "user" ? "bg-amber-200 ml-25" : "bg-amber-100 mr-25"}`}
+          >
+            <strong>{msg.role}: </strong>
+            <Markdown remarkPlugins={[remarkGfm]}>
+              {msg.content?.toString() || "<no reply>"}
+            </Markdown>
+          </li>
+        ))}
 
-      {streamingResponse && <li className="bg-amber-100 mr-25">
-        <strong>streaming ai: </strong>
-        <Markdown remarkPlugins={[remarkGfm]}>
-          {streamingResponse}
-        </Markdown>
-      </li>}
-    </ol>
-    <form className=" flex gap-2 border-t p-4" action={userSendMsgHandler}>
-      <Input name="msg" placeholder="message here" />
-      <Button type="submit"> Send msg</Button>
-    </form>
-  </div>);
+        {streamingResponse && (
+          <li className="bg-amber-100 mr-25">
+            <strong>streaming ai: </strong>
+            <Markdown remarkPlugins={[remarkGfm]}>{streamingResponse}</Markdown>
+          </li>
+        )}
+      </ol>
+      <form className=" flex gap-2 border-t p-4" action={userSendMsgHandler}>
+        <Input name="msg" placeholder="message here" />
+        <Button type="submit"> Send msg</Button>
+      </form>
+    </div>
+  );
 
-  function NewChatHandler(): import("react").MouseEventHandler<HTMLButtonElement> | undefined {
+  function NewChatHandler():
+    | import("react").MouseEventHandler<HTMLButtonElement>
+    | undefined {
     return async () => {
       createLlmHistoryFn({
         data: {
-          projId: parseInt(props.prjId)
-        }
-      }).then(createdSessionId => {
+          projId: parseInt(props.prjId),
+        },
+      }).then((createdSessionId) => {
         props.queryClient.invalidateQueries({
-          queryKey: ["histories", props.prjId]
+          queryKey: ["histories", props.prjId],
         });
         setSelectedHistory(createdSessionId.toString());
       });
@@ -133,19 +139,16 @@ function Chat(props: { prjId: string, queryClient: QueryClient }) {
   }
 }
 
-
 function RouteComponent() {
   const getContainerAcessURLIn = useServerFn(getContainerAcessURLFn);
-  const { data: accessURL } = useQuery({
-    queryKey: ["accessurl"],
-    queryFn: () =>
-      getContainerAcessURLIn({ data: { projId: parseInt(props.prjId) } }),
-  });
 
   const { prjId } = Route.useParams();
   const queryClient = useQueryClient();
-
-
+  const { data: accessURL } = useQuery({
+    queryKey: ["accessurl"],
+    queryFn: () =>
+      getContainerAcessURLIn({ data: { projId: parseInt(prjId) } }),
+  });
   return (
     <ResizablePanelGroup
       orientation="horizontal"
@@ -153,7 +156,7 @@ function RouteComponent() {
     >
       {/* Left: chat/history panel */}
       <ResizablePanel defaultSize="40%">
-        <Chat prjId={prjId} queryClient={queryClient} ></Chat>
+        <Chat prjId={prjId} queryClient={queryClient}></Chat>
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize="60%">
