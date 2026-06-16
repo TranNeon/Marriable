@@ -6,9 +6,9 @@ import {
   getSingleLlmHistoryFn,
 } from "#/lib/crud/llmHistory.ts";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useRouteContext } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/projects/$prjId")({
   component: RouteComponent,
@@ -23,23 +23,32 @@ import { getContainerAcessURLFn } from "#/lib/crud/project";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import HoverSelect from "#/components/hover-select";
-import { defineHandlerCallback } from "@tanstack/react-start/server";
 
 function RouteComponent() {
-  const decoder = new TextDecoder();
-
   const { prjId } = Route.useParams();
   const queryClient = useQueryClient();
   const getAllLlmHistory = useServerFn(getAllLlmHistoryFn);
   const { data: histories } = useQuery({
     queryKey: ["histories", prjId],
-    queryFn: () => getAllLlmHistory({ data: { projId: parseInt(prjId) } }),
+    queryFn: async () => {
+      return await getAllLlmHistory({
+        data: { projId: parseInt(prjId) },
+      });
+    },
   });
+
+  useEffect(() => {
+    setStreamingResponse("");
+  }, [histories]);
   //todo: damn, how else would i handle this
   const [selectedHistory, setSelectedHistory] = useState<string>("");
   const getSingleLlmHistory = useServerFn(getSingleLlmHistoryFn);
   const [streamingResponse, setStreamingResponse] = useState<string>("");
-  const { data: loadedHistory } = useQuery({
+  const {
+    data: loadedHistory,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["loadedHistory"],
     queryFn: () =>
       getSingleLlmHistory({ data: { historyId: parseInt(selectedHistory) } }),
@@ -94,14 +103,13 @@ function RouteComponent() {
               }))}
               action={(value: any) => {
                 setSelectedHistory(value);
-                console.log("selected history" + selectedHistory);
                 queryClient.invalidateQueries({
                   queryKey: ["loadedHistory"],
                 });
               }}
             />
           )}
-
+          {isLoading && <span>Loading...</span>}
           <Button
             onClick={async () => {
               createLlmHistoryFn({ data: { projId: parseInt(prjId) } }).then(
@@ -141,12 +149,14 @@ function RouteComponent() {
                 <div>No chat Session loaded, select or start new</div>
               </div>
             )}
-            <li className="bg-amber-200 p-5 m-5 mr-25">
-              <strong>{"streaming ai "}: </strong>
-              <Markdown remarkPlugins={[remarkGfm]}>
-                {streamingResponse}
-              </Markdown>
-            </li>
+            {streamingResponse !== "" && (
+              <li className="bg-amber-200 p-5 m-5 mr-25">
+                <strong>{"streaming ai "}: </strong>
+                <Markdown remarkPlugins={[remarkGfm]}>
+                  {streamingResponse}
+                </Markdown>
+              </li>
+            )}
           </ol>
           <form
             className=" flex gap-2 border-t p-4"
@@ -163,20 +173,24 @@ function RouteComponent() {
           {/* top: code-server */}
           {/* bottom: VNC browser */}
           <ResizablePanel defaultSize="50%">
-            <iframe
-              className="h-full w-full"
-              src={`${accessURL}//vnc/index.html?autoconnect=true`}
-              title="browser"
-            />
+            {accessURL && (
+              <iframe
+                className="h-full w-full"
+                src={`${accessURL}//vnc/index.html?autoconnect=true`}
+                title="browser"
+              />
+            )}
           </ResizablePanel>
 
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize="50%">
-            <iframe
-              className="h-full w-full"
-              src={`${accessURL}/code-server/?folder=/home/gem`}
-              title="code-server"
-            />
+            {accessURL && (
+              <iframe
+                className="h-full w-full"
+                src={`${accessURL}/code-server/?folder=/home/gem`}
+                title="code-server"
+              />
+            )}
           </ResizablePanel>
         </ResizablePanelGroup>
       </ResizablePanel>

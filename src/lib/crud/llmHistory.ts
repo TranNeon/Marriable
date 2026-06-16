@@ -6,7 +6,6 @@ import { llmHistory, project } from "#/db/schema";
 import type { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import { eq } from "drizzle-orm";
 import { getLlm } from "../llm";
-import { callTool, getMcp_n_Tool } from "../mcp-client.server";
 
 const ProjectId = z.object({
   projId: z.int().nonoptional(),
