@@ -69,10 +69,13 @@ export async function createContainer(
   const docker = await getDocker();
   const container = await docker.createContainer({
     Image: SANDBOX_IMAGE,
-    // Using a command that keeps the container alive (if your image doesn't have a long-running entrypoint)
-    Cmd: ["tail", "-f", "/dev/null"],
+    HostConfig: {
+      SecurityOpt: ["seccomp:unconfined"],
+      PortBindings: { "8080/tcp": [{ HostPort: "0" }] },
+    },
+    // // Using a command that keeps the container alive (if your image doesn't have a long-running entrypoint)
+    // Cmd: ["tail", "-f", "/dev/null"],
     ExposedPorts: { "8080/tcp": {} },
-    HostConfig: { PortBindings: { "8080/tcp": [{ HostPort: "0" }] } },
   });
 
   return container;

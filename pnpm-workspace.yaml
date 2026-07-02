@@ -1,0 +1,8 @@
+allowBuilds:
+  '@parcel/watcher': false
+  cpu-features: false
+  esbuild: false
+  msw: false
+  protobufjs: false
+  sharp: false
+  ssh2: false

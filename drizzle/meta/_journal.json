@@ -15,6 +15,20 @@
       "when": 1774683355908,
       "tag": "0001_adorable_gertrude_yorkes",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775200000000,
+      "tag": "0002_create_project_and_llm_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1782967446883,
+      "tag": "0003_futuristic_mastermind",
+      "breakpoints": true
     }
   ]
 }
