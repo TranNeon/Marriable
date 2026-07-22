@@ -1,0 +1,20 @@
+networks:
+  traefik:
+    name: traefik
+
+services:
+  traefik:
+    image: traefik:v3.6
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    command:
+      # Docker provider via TCP (Docker Desktop → Settings → "Expose daemon on tcp://localhost:2375")
+      - "--providers.docker=true"
+      - "--providers.docker.endpoint=tcp://host.docker.internal:2375"
+      - "--providers.docker.exposedbydefault=false"
+      # HTTP entrypoint on port 80
+      - "--entrypoints.web.address=:80"
+    networks:
+      - traefik

@@ -62,11 +62,23 @@ export async function getContainerAcessURL(projectId: number) {
 
   return `http://localhost:${await getMappedPort(container, 8080)}`;
 }
-// projectId is optional is provided as metadata
+function sanitizeSubdomain(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 63);
+}
+
 export async function createContainer(
-  projectId: string,
+  projectName: string,
 ): Promise<Docker.Container> {
   const docker = await getDocker();
+  const subdomain = sanitizeSubdomain(projectName);
+  const hostname = `${subdomain}.localhost`;
+  const routerName = `project-${subdomain}`;
+
   const container = await docker.createContainer({
     Image: SANDBOX_IMAGE,
     HostConfig: {
@@ -76,7 +88,26 @@ export async function createContainer(
     // // Using a command that keeps the container alive (if your image doesn't have a long-running entrypoint)
     // Cmd: ["tail", "-f", "/dev/null"],
     ExposedPorts: { "8080/tcp": {} },
+    Labels: {
+      "traefik.enable": "true",
+      [`traefik.http.routers.${routerName}.rule`]: `Host(\`${hostname}\`)`,
+      [`traefik.http.routers.${routerName}.entrypoints`]: "web",
+      [`traefik.http.services.${routerName}.loadbalancer.server.port`]: "8080",
+    },
   });
+
+  // Ensure the shared traefik network exists, then connect BEFORE starting
+  // so Traefik discovers the container on the right network immediately
+  const networks = await docker.listNetworks();
+  const hasNetwork = networks.some((n) => n.Name === "traefik" || n.Name.endsWith("_traefik"));
+  if (!hasNetwork) {
+    await docker.createNetwork({ Name: "traefik" });
+  }
+  const network = docker.getNetwork("traefik");
+  await network.connect({ Container: container.id });
+
+  // Start the container so services (noVNC, code-server, MCP) are running
+  await container.start();
 
   return container;
 }
